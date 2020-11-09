@@ -1,0 +1,43 @@
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+
+target/
+.idea/
+.mvn/
+*.iml
+generator_error.log
+doc/*/~*.docx
+doc/*/~*.doc
+
+# 忽略文档生成的文件
+toolmall-web-app/src/main/docs/asciidoc/definitions.adoc
+toolmall-web-app/src/main/docs/asciidoc/overview.adoc
+toolmall-web-app/src/main/docs/asciidoc/paths.adoc
+toolmall-web-app/src/main/docs/asciidoc/security.adoc
+
+
+/defu
