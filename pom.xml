@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ljc</groupId>
-    <artifactId>MyLightFramework</artifactId>
+    <artifactId>my-lightframework</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>Spring</module>
+        <module>spring</module>
         <module>sourcecode</module>
     </modules>
 
