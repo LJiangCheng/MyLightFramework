@@ -8,6 +8,7 @@ public class InitAnalyze {
     public static void main(String[] args) {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext("com.source.analyze");
         UserService userService = (UserService) applicationContext.getBean("userService");
+        applicationContext.publishEvent(new Object());
         System.out.println(userService.getUser());
     }
 
