@@ -10,7 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spring</artifactId>
-    <packaging>jar</packaging>
 
+    <modules>
+        <module>my_spring</module>
+        <module>sourcecode</module>
+    </modules>
 
 </project>
