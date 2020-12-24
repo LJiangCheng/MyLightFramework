@@ -67,6 +67,13 @@ public class TimeServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(port).sync();
+            Thread.sleep(1000);
+            f.channel().eventLoop().execute(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("测试");
+                }
+            });
 
             // Wait until the server socket is closed.
             // In this example, this does not happen, but you can do that to gracefully
