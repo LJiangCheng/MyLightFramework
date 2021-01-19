@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,7 +55,9 @@ public class TimeServer {
             b.group(bossGroup, workerGroup)
                     //根据Class创建Factory用于生产Channel实例
                     .channel(NioServerSocketChannel.class)
-                    //设置ChannelHandler
+                    //为bossGroup设置handler，处理ServerSocketChannel，服务端接收到新的请求时使用
+                    .handler(new LoggingHandler())
+                    //为workerGroup设置handler，处理SocketChannel，给新创建的连接使用
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) {
