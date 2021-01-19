@@ -94,7 +94,7 @@ Reactor With NIO
    * reactor模块
      > 从github上获取，对其进行了主从分离改造和改造中的BUG修复
      > 具体解释见代码，对整个流程做了完整的注释
-     * App
+     * 入口：App
        > 从App看起，观察server端的整个启动过程
 
 ## Netty
