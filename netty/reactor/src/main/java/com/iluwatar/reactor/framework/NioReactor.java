@@ -303,9 +303,9 @@ public class NioReactor {
         //设置为非阻塞
         socketChannel.configureBlocking(false);
         //将SocketChannel注册到subReactor上，并表明感兴趣的事件为读就绪
-        //selector.select()方法会锁住publicKeys，而socketChannel.register()也需要锁住publicKeys，
+        //死锁问题：selector.select()方法会锁住publicKeys，而socketChannel.register()也需要锁住publicKeys，
         //所以对于一个正阻塞在select上的selector而言，调用register方法会导致死锁，需要先调用一次wakeup以释放锁
-        //疑问：这样不能确保解决死锁问题吧？是否可以将select()改为select(long times)来解决？对性能影响如何？
+        //疑问：这样不能确保解决死锁问题吧？是否可以将select()改为select(long times)来解决？对性能影响如何？ 几乎没有影响！
         //subSelector.wakeup();
         SelectionKey readKey = socketChannel.register(nextSubSelector(), SelectionKey.OP_READ);
         /* 绑定ServerSocketChannel到readKey
