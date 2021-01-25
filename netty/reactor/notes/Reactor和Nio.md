@@ -13,7 +13,7 @@ Reactor With NIO
        > 同步阻塞：等待IO数据准备的过程中线程挂起   --传统BIO
          - NIO客户端调用服务端时，对于发起调用的特定线程来说，如果要等待服务端数据响应，那么发起调用的这个线程依然是同步阻塞的  
            但这不属于NIO的概念范围，NIO解决的是IO过程中的阻塞问题，而不能去除业务过程所必须的阻塞等待。
-         - 流程简图：![nio_flow.png](etc/nio_flow.png)
+         - 流程简图：![nio_flow.png](../etc/nio_flow.png)
        > 异步阻塞：等待数据准备的通知的过程中线程挂起   --这种情形基本没有
    * 非阻塞：调用发起后在等待结果的过程中线程继续执行其他任务
      - IO操作中的非阻塞：读取时，可以读多少数据就读多少然后返回；写出时，可以写多少就写多少然后返回
@@ -65,7 +65,7 @@ Reactor With NIO
 1. 概念和结构
    > 事件驱动的，有一个或多个并发输入源，有一个ServiceHandler，有多个RequestHandler。这个ServiceHandler会同步的将输入的请求多路复用地  
      分发给RequestHandler。如图：
-     ![Reactor_Simple.png](etc/Reactor_Simple.png)
+     ![Reactor_Simple.png](../etc/Reactor_Simple.png)
    > 结构上看这有点类似生产者消费者模式，即有一个或多个生产者将事件放入一个Queue中，而一个或多个消费者主动的从这个Queue中Poll事件来处理；  
      不同的是Reactor模式并没有Queue来做缓冲，每当一个Event输入到Service Handler之后，该Service Handler会主动的根据不同的Event类型将其分发给  
      对应的Request Handler来处理。

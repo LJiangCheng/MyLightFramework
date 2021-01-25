@@ -21,18 +21,18 @@
    * 当请求量较大时需要创建大量线程来处理连接，系统资源占用较大
    * 连接建立后，如果当前线程暂时没有数据可读/写，线程就会阻塞在read()操作上，浪费线程资源（但没有浪费CPU）
 
-![Reactor_Simple.png](file/阻塞IO模型.png)
+![Reactor_Simple.png](../file/阻塞IO模型.png)
 
 2. IO复用模型
 
-![IO复用模型.png](file/IO复用模型.png)
+![IO复用模型.png](../file/IO复用模型.png)
 
    在I/O复用模型中，使用selector.select()，这个函数也会使进程阻塞，但是和阻塞 I/O 所不同的是这两个函数可以同时阻塞多个 I/O 操作。  
    而且可以同时对多个读操作，多个写操作的 I/O 函数进行检测，直到有数据可读或可写时，才真正调用 I/O 操作函数。
 
    Netty的非阻塞I/O的实现关键是基于I/O复用模型，这里用 Selector 对象表示：
 
-![Netty非阻塞IO模型.png](file/Netty非阻塞IO模型.png)
+![Netty非阻塞IO模型.png](../file/Netty非阻塞IO模型.png)
 
 > Netty 的 IO 线程 NioEventLoop 由于聚合了多路复用器 Selector，可以同时并发处理成百上千个客户端连接。  
   当线程从某客户端 Socket 通道进行读写数据时，若没有数据可用时，该线程可以进行其他任务。  
@@ -52,7 +52,7 @@
   - 事件驱动也称消息通知方式，其实是设计模式中观察者模式的思路
 
   模型图：
-  ![事件驱动模型.png](file/事件驱动模型.png)
+  ![事件驱动模型.png](../file/事件驱动模型.png)
 
   可见事件驱动模型包括4个基本组件：
   > 事件队列（event queue）：接收事件的入口，存储待处理事件。  
@@ -66,7 +66,7 @@
 
 ## 线程模型
 
-![reactor组件.png](file/reactor组件.png)
+![reactor组件.png](../file/reactor组件.png)
 
 Reactor模型的2个关键组成：
 * Reactor
@@ -95,7 +95,7 @@ Netty实现了Reactor线程模型，并且从简单到复杂提供了对Reactor�
 2. 单reactor多线程 + 主从reactor多线程
 
 见reactor模块的线程模型.md
-![主从reactor多线程.png](../reactor/etc/主从reactor多线程.png)
+![主从reactor多线程.png](../../reactor/etc/主从reactor多线程.png)
 
 4. 串行无锁化
 
@@ -103,8 +103,8 @@ Netty实现了Reactor线程模型，并且从简单到复杂提供了对Reactor�
 例如在I/O线程内部进行串行操作，避免多线程竞争导致的性能下降问题。表面上看，串行化设计似乎CPU利用率不高，并发程度不够。  
 但是，通过调整NIO线程池的线程参数，可以同时启动多个串行化的线程并行运行，这种**局部无锁化的串行线程设计**相比一个队列多个工作线程的模型性能更优。
 
-![Netty的线程模型.png](file/Netty的线程模型.png)  
-![Netty的设计原理.png](file/Netty的设计原理.png)
+![Netty的线程模型.png](../file/Netty的线程模型.png)  
+![Netty的设计原理.png](../file/Netty的设计原理.png)
 
 Netty的NioEventLoop读取到消息之后，直接调用ChannelPipeline的fireChannelRead (Object msg)。  
 只要用户不主动切换线程，一直都是由NioEventLoop调用用户的ChannelHandler，期间不进行线程切换。  
@@ -116,7 +116,7 @@ Netty的NioEventLoop读取到消息之后，直接调用ChannelPipeline的fireCh
 > bossGroup
 > > 线程池在Bind某个端口后，获得其中一个线程作为MainReactor，专门处理端口的Accept事件，**每个端口对应一个Boss线程**
 > workerGroup
-> > 共用，线程池会被各个SubReactor和Worker线程充分利用
+> > 共用，线程池会被各个SubReactor(IO线程)和Worker(业务线程)线程充分利用
 
 **BossGroup的线程数量问题**
 
@@ -126,24 +126,33 @@ Netty拥有两个NIO线程池，分别是bossGroup和workerGroup，前者处理�
 
 *延伸*
 > 这里试想一下，难道不能使用多线程来监听同一个对外端口么，即多线程epoll_wait到同一个epoll实例上？
-> [线程数量的延伸问题](线程数量的延伸问题.md)
+> [线程数量的延伸问题](../file/epoll线程的延伸问题.md)  
 > 结论：能支持，但是不建议使用！
 
+6. **Netty线程模型实践**
 
-## 协议支持
+netty线程模型实践
+(1) 时间可控的简单业务直接在I/O线程上处理
 
-## 粘连包解决方案
+时间可控的简单业务直接在 I/O 线程上处理，如果业务非常简单，执行时间非常短，不需要与外部网络交互、访问数据库和磁盘，不需要等待其它资源，  
+则建议直接在业务 ChannelHandler 中执行，不需要再启动业务的线程或者线程池。避免线程上下文切换，也不存在线程并发问题。
 
-## 基于Buffer
+(2) 复杂和时间不可控业务建议投递到后端业务线程池统一处理
 
-*  传统的IO面向字节流或字符流，以流式的方式顺序地从一个 Stream 中读取一个或多个字节, 因此也就不能随意改变读取指针的位置。
-*  在NIO中，抛弃了传统的I/O流，而是引入了Channel和Buffer的概念。在NIO中，只能从Channel中读取数据到 Buffer 中或将数据从 Buffer 中写入到 Channel。
-*  基于Buffer操作不像传统IO的顺序操作，NIO 中可以随意地读取任意位置的数据。
+复杂度较高或者时间不可控业务建议投递到后端业务线程池统一处理，对于此类业务，不建议直接在业务 ChannelHandler 中启动线程或者线程池处理，  
+建议将不同的业务统一封装成 Task，统一投递到后端的业务线程池中进行处理。过多的业务ChannelHandler 会带来开发效率和可维护性问题，不要把  
+Netty当作业务容器，对于大多数复杂的业务产品，仍然需要集成或者开发自己的业务容器，做好和Netty的架构分层。
+> **Dubbo源码关注点：和Netty的架构分层**
 
-## 零拷贝
+(3) 业务线程避免直接操作ChannelHandler
 
-## pipeline
+业务线程避免直接操作ChannelHandler，对于ChannelHandler，IO线程和业务线程都可能会操作，因为业务通常是多线程模型，  
+这样就会存在多线程操作ChannelHandler。为了尽量避免多线程并发问题，建议按照 Netty 自身的做法，通过将操作封装成独立的  
+Task由NioEventLoop统一执行，而不是业务线程直接操作，相关代码如下所示：
 
+![线程模型实践.png](../file/线程模型实践.png)
+
+如果你确认并发访问的数据或者并发操作是安全的，则无需多此一举，这个需要根据具体的业务场景进行判断，灵活处理。
 
 
 
